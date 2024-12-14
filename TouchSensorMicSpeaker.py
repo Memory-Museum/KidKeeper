@@ -1,5 +1,9 @@
-# Contributors: Milan, JC, Belen
+# Contributors: Script created by Milan and JC during the Spring of 2024. Modified by Belen in the Fall of 2024. 
 # PI: Dr. Jasmine Jones 
+
+## Resources: 
+# Send email tutorial: https://www.youtube.com/watch?v=ueqZ7RL8zxM
+
 
 import RPi.GPIO as GPIO
 import subprocess
@@ -18,7 +22,7 @@ import os
 
 # Setup your capacitive touch sensor pin
 touchSensorPin = 21
-audio_folder = "./audios/"
+audio_folder = "./TouchSensor/audios/" # we are saving the recorded audios in a diferent directory to keep that secured.
 smtp_port = 587                 # Standard secure SMTP port
 smtp_server = "smtp.gmail.com"  # Google SMTP Server 
 
@@ -40,6 +44,13 @@ def setup():
         os.makedirs(audio_folder)
 
 def record_audio(filename, duration=10):
+    """
+    Record audio 
+    args: 
+    filename:  string 
+    duration: int 
+
+    """
     full_path = f"{filename}.wav"
     command = f"arecord -d {duration} -f S16_LE -q {full_path}"
     result = subprocess.run(command, shell=True)
@@ -52,6 +63,9 @@ def record_audio(filename, duration=10):
 def play_audio(filename, volume_percent=100) -> None:
     '''
     Plays wav audio files
+    args: 
+    filename: string
+    volume_percent: int 
     '''
     full_path = f"{filename}.wav"
 
@@ -68,10 +82,10 @@ def play_audio(filename, volume_percent=100) -> None:
 
 def send_emails(email_list) -> None:
     '''
-    Sends the new audio recorded 
+    Structure email text, select the most recently recorded video and send emai. 
 
     args: 
-    email_list: list of emails to send the audio
+    email_list: list of emails to send the audio, this is set in a global function
     
     '''
     today = date.today()
@@ -79,7 +93,6 @@ def send_emails(email_list) -> None:
     audio_path = '/home/milangarciaj/Documents/TouchSensor/audios'
 
     for person in email_list:
-        #Body of the email
         body = """
         
         Dear Kid Keeper user, 
@@ -138,6 +151,11 @@ def send_emails(email_list) -> None:
 
 
 def loop():
+    """
+    Function that runs all the logic of the program
+
+    args: None
+    """
     print("System ready. Touch the sensor to record and play audio.")
     isSensorTouched = False
     
@@ -167,4 +185,4 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         print("Exiting program")
-        GPIO.cleanup()  # Clean up GPIO on CTRL+C exit
+        GPIO.cleanup()  
