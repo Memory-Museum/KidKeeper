@@ -51,8 +51,12 @@ def send_emails(email_list):
     for person in email_list:
         # Make the body of the email
         body = """
-        Hola! 
-        Debugging ................. We have a new recording for you!
+        Dear Kid Keeper user, 
+        We have a new memory recorded for you. 
+
+        Best,
+
+        The KidKeeper development team
         """
 
         # make a MIME object to define parts of the email
