@@ -1,6 +1,5 @@
 # Contributors: Milan, JC, Belen
-# PI: DR. Jones 
-
+# PI: Dr. Jasmine Jones 
 
 import RPi.GPIO as GPIO
 import subprocess
@@ -17,12 +16,11 @@ from datetime import date
 from dotenv import load_dotenv
 import os
 
-
 # Setup your capacitive touch sensor pin
 touchSensorPin = 21
 audio_folder = "./audios/"
 smtp_port = 587                 # Standard secure SMTP port
-smtp_server = "smtp.gmail.com"  # Google SMTP Server
+smtp_server = "smtp.gmail.com"  # Google SMTP Server 
 
 # Set up the email lists
 email_from = "marb5786@gmail.com"
@@ -32,31 +30,56 @@ email_list = ["belensaavedra.bo@gmail.com"]
 load_dotenv()
 pswd = os.getenv("pswd") 
 
-
-# name the email subject
-today = date.today()
-subject = f"New KidKeeper: An Update from {today}"
-audio_path = '/home/milangarciaj/Documents/TouchSensor/audios'
-
-
 def setup():
+    '''
+    setup function that runs all the necessary variables  
+    '''
     GPIO.setmode(GPIO.BCM)  # Use BCM numbering
     GPIO.setup(touchSensorPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # Setup touch sensor pin
+    if not os.path.exists(audio_folder):
+        os.makedirs(audio_folder)
+
 def record_audio(filename, duration=10):
-    # Command to record audio from default USB mic to specified file for a duration in seconds
-    command = f"arecord -d {duration} -f S16_LE -q {filename}.wav"
-    subprocess.run(command, shell=True)
-def play_audio(filename, volume_percent=100):
+    full_path = f"{filename}.wav"
+    command = f"arecord -d {duration} -f S16_LE -q {full_path}"
+    result = subprocess.run(command, shell=True)
+    if result.returncode != 0:
+        print(f"Error: Audio recording failed with return code {result.returncode}")
+    else:
+        print(f"Audio recorded successfully: {full_path}")
+
+
+def play_audio(filename, volume_percent=100) -> None:
+    '''
+    Plays wav audio files
+    '''
+    full_path = f"{filename}.wav"
+
+    if not os.path.exists(full_path):
+        raise FileNotFoundError(f"Audio file {full_path} not found for playback.")
+
     # Adjust the system volume
     set_volume_command = f"amixer set Master {volume_percent}%"
     subprocess.run(set_volume_command, shell=True)
     # Command to play audio file
-    play_command = f"aplay {filename}.wav"
+    play_command = f"aplay {full_path}"
     subprocess.run(play_command, shell=True)
 
-def send_emails(email_list):
+
+def send_emails(email_list) -> None:
+    '''
+    Sends the new audio recorded 
+
+    args: 
+    email_list: list of emails to send the audio
+    
+    '''
+    today = date.today()
+    subject = f"KidKeeper: An Update from {today}"
+    audio_path = '/home/milangarciaj/Documents/TouchSensor/audios'
+
     for person in email_list:
-        # Make the body of the email
+        #Body of the email
         body = """
         
         Dear Kid Keeper user, 
@@ -122,7 +145,7 @@ def loop():
         if GPIO.input(touchSensorPin) == GPIO.HIGH:
             print("Touched sensor")
             # add feedback sound
-            play_audio("/home/milangarciaj/Documents/KidKeeper/feedback_sound.mp3")
+            play_audio("/home/milangarciaj/Documents/KidKeeper/feedback_sound")
             isSensorTouched = True
             current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")  # Get current date and time
             audio_file = os.path.join(audio_folder, f"recorded_audio_{current_time}")
