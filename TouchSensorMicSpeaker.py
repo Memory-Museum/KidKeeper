@@ -1,3 +1,7 @@
+# Contributors: Milan, JC, Belen
+# PI: DR. Jones 
+
+
 import RPi.GPIO as GPIO
 import subprocess
 import os
@@ -10,7 +14,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 from datetime import date 
+from dotenv import load_dotenv
 import os
+
 
 # Setup your capacitive touch sensor pin
 touchSensorPin = 21
@@ -22,8 +28,9 @@ smtp_server = "smtp.gmail.com"  # Google SMTP Server
 email_from = "marb5786@gmail.com"
 email_list = ["belensaavedra.bo@gmail.com"]
 
-# Define the password (better to reference externally)
-pswd = "dtlu ilzx dcki rukk" 
+# call token 
+load_dotenv()
+pswd = os.getenv("pswd") 
 
 
 # name the email subject
@@ -51,8 +58,10 @@ def send_emails(email_list):
     for person in email_list:
         # Make the body of the email
         body = """
+        
         Dear Kid Keeper user, 
-        We have a new memory recorded for you. 
+        
+        Were you wondering what has your kid been up to? We have a new memory for you. 
 
         Best,
 
@@ -112,6 +121,8 @@ def loop():
     while True:
         if GPIO.input(touchSensorPin) == GPIO.HIGH:
             print("Touched sensor")
+            # add feedback sound
+            play_audio("/home/milangarciaj/Documents/KidKeeper/feedback_sound.mp3")
             isSensorTouched = True
             current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")  # Get current date and time
             audio_file = os.path.join(audio_folder, f"recorded_audio_{current_time}")
